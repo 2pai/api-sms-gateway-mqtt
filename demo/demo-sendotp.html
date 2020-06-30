@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Send OTP</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+</head>
+<body>
+        <div class="container">
+            <div class="jumbotron">
+                <h2 class="text-center">Demo Send OTP</h2>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" placeholder="+628209042032" class="form-control" name="phoneNumber" id="phoneNumber">
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-primary" onclick="requestOTP()"> Request OTP</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" placeholder="OTP CODE" class="form-control" name="otpCode" id="otpCode">
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-primary" onclick="verifyOtp()"> Verify OTP</button>
+                            </div>
+                        </div>
+                    </div>
+                    <pre>
+                        <div class="message">
+                            
+                        </div>
+                    </pre>
+            </div>
+        </div>
+    </body>
+</html>
+<script>
+    var nextURL;
+    function requestOTP(){
+        var number = document.getElementById("phoneNumber").value;
+        if(number == ''){
+            alert("Wrong Input !")
+            return
+        }
+        var linkRequestOTP = "http://localhost:9002/requestOTP"
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+        
+        var raw = JSON.stringify({"phoneNumber":number});
+        
+        var requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: raw,
+            redirect: 'follow'
+        };
+        
+        fetch(linkRequestOTP, requestOptions)
+        .then(response => response.json())
+        .then(result => {
+            if(result.ok == 1){
+                nextURL = result.next
+                alert("Request OTP "+ result.message)
+            }
+        })
+        .catch(error => console.log('error', error));
+    }
+    function verifyOtp(){
+        var otpCode = document.getElementById("otpCode").value;
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+        
+        var raw = JSON.stringify({"otpCode":otpCode});
+        
+        var requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: raw,
+            redirect: 'follow'
+        };
+        
+        fetch(nextURL, requestOptions)
+        .then(response => response.json())
+        .then(result => {
+            if(result.ok == 1){
+                nextURL = result.next
+                alert("OTP MATCH !  "+ result.message)
+            }else if(result.ok == 0){
+                alert("OTP INVALID")
+            }
+        })
+        .catch(error => console.log('error', error));
+
+    }
+</script>
